@@ -1,0 +1,236 @@
+---
+title: "Statistical Modelling Tutorial 1"
+format: html
+editor: visual
+---
+
+## Statistical Modelling: Practical 1
+
+Welcome to the first practical session! You can find the R tutorial guide here:
+
+<https://keats.kcl.ac.uk/mod/resource/view.php?id=7952812>
+
+and the data that you'll need is here:
+
+<https://keats.kcl.ac.uk/mod/resource/view.php?id=7952813>
+
+### 1. Use of the console
+
+See what happens when you run the following code (in this interactive notebook, you can execute each code block as if it was typed into the console. For the purpose of the exercise, also copy it into the console and run it there.
+
+```{r}
+2+3
+2*3
+3*4
+8/2
+sqrt(2)  # square root
+exp(2)   # natural exponential
+2^3      # power
+```
+
+You can also define variables using either the `<-` assignment operator, or also using `=`.
+
+```{r}
+a <- 1
+b <- 2
+a+b
+```
+
+If you just write the variable in the console, its content will be printed out. Also put these into the terminal to see how they are printed out there.
+
+```{r}
+a
+b
+```
+
+A technical comment: R variables are intyped - that is, you don't need to specify in advance if the variable is going to contain a number, a character, etc) but that does not mean that the object they reference is untyped:
+
+```{r}
+typeof(a)
+```
+
+This is important to remember because some R functions behave differently depending on the type of the object - whether it is a numeric, character, boolean or other types.
+
+### 2. Vector, matrices and data frames
+
+**Vectors**
+
+```{r}
+x <- c(5,2,6,1,4,1)
+x
+```
+
+```{r}
+y <- c('a','b','c','d','e','f')
+y
+```
+
+```{r}
+z <- 1:6
+z
+```
+
+```{r}
+v <- c(x,y,z)
+v
+```
+
+If you are using RStudio, you can see that all variable assignments are listed into the Environment tab in the top right window.
+
+**Matrices**
+
+```{r}
+A <- matrix(y,2,2)
+A
+A[1,2]
+```
+
+```{r}
+B <- matrix(z,2,3)
+B
+B[2,3]
+```
+
+You can overwrite entries in a matrix:
+
+```{r}
+B[1,2] <- 1000
+```
+
+Vectors and matrices need to contain options of the same type.
+
+**Data Frame**
+
+Data frames can include vectors of different types, but they need to be of the same length - this corresponds to the same number of rows (or typically in statistics, a row corresponds to an observation).
+
+```{r}
+data <- data.frame(x,y,z)
+data
+head(data)
+```
+
+You can access the data as a matrix:
+
+```{r}
+data[1,2] # element
+data[1,]  # row (observation)
+data[,2]  # column (variable)
+```
+
+Or by using variable names and the `$` operator:
+
+```{r}
+data$x
+data$y
+data$z
+```
+
+### 3. Functions in R
+
+In R it's possible to build yor own functions, but many useful ones are already available, for example:
+
+```{r}
+mean(x)
+sum(x)
+max(x)
+sd(x)
+table(y) # frequency table
+hist(x)
+pie(table(y))
+```
+
+so when you need to do something, look out for the functions that can help you! Note also that in R, there are all sorts of *packages* that can be installed and loaded that have predefined functions that are useful.
+
+Try:
+
+```{r}
+help(hist)
+```
+
+to see help instructions for a function of interest.
+
+### 4. Data import and export
+
+The first step of the data analysis is necessarily to import data in R. For small examples, this can be done manually be defining vectors which correspond to columns of a data.frame which we did above, however, this is not feasible for real data - imagine having to do this for thousands, even million of observations! Typically data will be collected in a .csv files (comma separated value), .txt (text) files, or .xlsx (excel) files which can then be loaded into R. Functions like read.csv and read.table are used.
+
+The function parameters need to be set to specify:
+
+1.   A delimiter: the delimiter is the character that separates values in the data
+2.  The decimal symbol used in the file (defaults to ".", the usual decimal point)
+
+alongside other variables.
+
+```{r}
+help(read.table)
+```
+
+***Important: Pay attention that the files need to be in your working directory to be imported. This can be found with the following command***
+
+```{r}
+getwd()
+current <- getwd() # save the name of the current working directory.
+```
+
+and it can be set with the command:
+
+```{r}
+setwd(current)
+```
+
+or using the menu tabs in RStudio:
+
+*Session \> Set Working Directory \> Choose Directory...*
+
+#### Exercise 1:
+
+1.  Set a new working directory.\
+    You could, for example, create a new folder in your Documents or Desktop called 'Practical 1' and set this as the working directory.
+2.  Download the 'protein.csv' file from the Keats page (linked at the top of the worksheet) and save it into the folder set as your working directory.
+3.  Then import the data:
+
+```{r}
+protein <- read.csv("protein.csv")
+head(protein)
+```
+
+4.  You can attach the data which will allow you to reference columns and variables in the data set without always having to reference the data set.
+
+```{r}
+attach(protein) # this allows us to access the named variables directly until we type detach(protein)
+
+mean(RedMeat) # mean of red meat consumption - the same as doing mean(protein$RedMeat) if we hadn't attached the data frame
+```
+
+5.  Compute the mean consumption of other types of food
+
+Whilst it is possible to write your commands directly into the console, it is advisable to use an editor to prepare commands you want to run which will minimise errors, allow for easy changes and check what you have done.
+
+The basic R installation comes with an editor, but I strongly recommend using RStudio!
+
+#### Exercise 2:
+
+1.  Try to open a new script in the RStudio editor (*File \> New Script \> R Script*). Write an arithmetic operation in there and run it in the console.
+2.  Let's now draw a scatterplot of the consumption of Red Mean and Fish from the data above:
+
+```{r}
+plot(RedMeat~Fish, col="lightblue", pch=19, cex=2, data=protein)
+text(RedMeat~Fish, labels=Country, data=protein, cex=0.9, font=2)
+```
+
+3.  Try using the graphical interface to save the plot on your device. This will be important when preparing the figures for your coursework.
+
+In the plot instructions above, note that:
+
+-   `plot` defaults to a scatter plot
+
+-   `col` specifies the colour of the points on the plot (different colours available by default in R can be found here on Page 4:\
+    <https://www.nceas.ucsb.edu/sites/default/files/2020-04/colorPaletteCheatsheet.pdf>
+
+-   `pch` is used to choose the shape of the point in the plot (a list of the different point types is available here:\
+    <https://www.sthda.com/english/wiki/r-plot-pch-symbols-the-different-point-shapes-available-in-r>
+
+-   `cex` is used to change the size of the text in the labels and other textual features on the plot
+
+-   `text` is a function used to add text to a plot in R.
+
+Finally, formulas are a crucial concept in R. You can see an example of the formula in the plot and text commands: `RedMeat ~ Fish`. You should think of formulas as `Y ~ X` - note how `RedMeat` is plotted on the $y$-axis, and `Fish` is plotted on the \$x\$-axis.\
