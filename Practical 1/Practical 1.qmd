@@ -6,7 +6,9 @@ editor: visual
 
 ## Statistical Modelling: Practical 1
 
-Welcome to the first practical session! You can find the R tutorial guide here:
+Welcome to your statistical modelling tutorials! I'm Kieran and will be your tutor for this course. You can contact me via email at kieran.baker\@kcl.ac.uk, and I'll be uploading my resources for the course at <https://sites.google.com/site/kieranbakerresources/statistical-modelling>. This includes these Quarto notebooks that you can find linked on the website, or in the github repo at <https://github.com/KieranBakerKCL/StatisticalModelling>.
+
+This is your first practical session! You can find the R tutorial guide here:
 
 <https://keats.kcl.ac.uk/mod/resource/view.php?id=7952812>
 
@@ -155,7 +157,7 @@ The first step of the data analysis is necessarily to import data in R. For smal
 
 The function parameters need to be set to specify:
 
-1.   A delimiter: the delimiter is the character that separates values in the data
+1.  A delimiter: the delimiter is the character that separates values in the data
 2.  The decimal symbol used in the file (defaults to ".", the usual decimal point)
 
 alongside other variables.
@@ -181,7 +183,7 @@ or using the menu tabs in RStudio:
 
 *Session \> Set Working Directory \> Choose Directory...*
 
-#### Exercise 1:
+#### Exercise 1
 
 1.  Set a new working directory.\
     You could, for example, create a new folder in your Documents or Desktop called 'Practical 1' and set this as the working directory.
@@ -207,7 +209,7 @@ Whilst it is possible to write your commands directly into the console, it is ad
 
 The basic R installation comes with an editor, but I strongly recommend using RStudio!
 
-#### Exercise 2:
+#### Exercise 2
 
 1.  Try to open a new script in the RStudio editor (*File \> New Script \> R Script*). Write an arithmetic operation in there and run it in the console.
 2.  Let's now draw a scatterplot of the consumption of Red Mean and Fish from the data above:
@@ -233,4 +235,4 @@ In the plot instructions above, note that:
 
 -   `text` is a function used to add text to a plot in R.
 
-Finally, formulas are a crucial concept in R. You can see an example of the formula in the plot and text commands: `RedMeat ~ Fish`. You should think of formulas as `Y ~ X` - note how `RedMeat` is plotted on the $y$-axis, and `Fish` is plotted on the \$x\$-axis.\
+Finally, formulas are a crucial concept in R. You can see an example of the formula in the plot and text commands: `RedMeat ~ Fish`. You should think of formulas as `Y ~ X` - note how `RedMeat` is plotted on the $y$-axis, and `Fish` is plotted on the $x$-axis.\
