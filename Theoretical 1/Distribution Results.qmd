@@ -1,0 +1,75 @@
+---
+title: "DistributionResults"
+format: html
+editor: visual
+---
+
+## Distribution Results
+
+As in the tutorial, let's simulate four sets of observations from three standard normal distributions.
+
+```{r}
+# First let's set the parameters mu and sigma
+mu = 0
+sigma = 1
+n = 4
+
+# Now we get our three sets of four observations
+z1_obs = rnorm(n, mean=mu, sd = sigma)
+z2_obs = rnorm(n, mean=mu, sd = sigma)
+z3_obs = rnorm(n, mean=mu, sd = sigma)
+
+# Let's collect our observations in a matrix
+obs_mat = matrix(c(z1_obs, z2_obs, z3_obs), 4, 3)
+obs_mat
+```
+
+Now we can square the values and sum them together to get four values sampled from a sum of 3 squared normals
+
+```{r}
+sq_obs_mat = obs_mat**2
+sum_squares = rowSums(sq_obs_mat)
+sum_squares
+```
+
+The mathematics suggests that these four observations come from a $\chi^2_3$ distribution. We can validate this by repeating the procedure but for 1000 observations rather than 4.
+
+```{r}
+n=1000
+z1_obs = rnorm(n, mean=mu, sd = sigma)
+z2_obs = rnorm(n, mean=mu, sd = sigma)
+z3_obs = rnorm(n, mean=mu, sd = sigma)
+
+obs_mat = matrix(c(z1_obs, z2_obs, z3_obs), n, 3)
+sq_obs_mat = obs_mat**2
+sum_squares = rowSums(sq_obs_mat)
+
+# Let's plot a histogram of the results
+hist(sum_squares, breaks = 70, xlim = c(0, 15), main='Sample from Normal Dists')
+
+# We can compare this to a collection of obsevations taken directly from the chi-squared distribution
+chisq_sample = rchisq(1000000, 3)
+hist(chisq_sample, breaks = 150, xlim = c(0, 15), main='Sample from Chi-Squared')
+```
+
+We can also compare Kernel Density Estimates of these two sets of variables. Kernel density estimates plot the empirical density of some observed values - conceptually you can think of this as like smoothing out a histogram.
+
+```{r}
+plot(density(chisq_sample), col='blue')
+lines(density(sum_squares), col='red')
+legend('topright', legend = c('Chi Squared', 'Normals'), col = c('blue', 'red'), lty = 1)
+```
+
+See how the two curves are very similar, suggesting similar distributions.
+
+Similar sampling procedures can be used to empirically demonstrate that if $U \sim \chi^2_m$ and $V\sim \chi^2_n$, then
+
+-   $$\frac{U/m}{V/n} \sim F_{m,n}$$
+
+-   $$\frac{Z_i}{\sqrt{V/n}} \sim t_n$$
+
+-   
+
+### Exercise
+
+As an exercise, see if you can use the `rchisq(n, df)`, `rf(n, df_1, df_2)` and `rt(n, df)` functions to generate random samples from a chi-squared, F, and student's-t distributions respectively alongside kernel density estimates to demonstrate these mathematical results empirically.
