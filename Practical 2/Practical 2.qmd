@@ -1,0 +1,131 @@
+---
+title: "Practical 2"
+format: html
+editor: visual
+---
+
+## Statistical Modelling: Practical 2
+
+As always, my content is available at: <https://sites.google.com/site/kieranbakerresources/statistical-modelling>
+
+including the Quarto notebooks, which are also available on the github page: <https://github.com/KieranBakerKCL/StatisticalModelling>.
+
+The R tutorial guide on Keats is available at:
+
+<https://keats.kcl.ac.uk/pluginfile.php/11170186/mod_resource/content/5/Practical%202%20script.R>
+
+and the data that you'll need is here:
+
+<https://keats.kcl.ac.uk/pluginfile.php/11170188/mod_resource/content/1/Stackloss.txt>
+
+Today, we will learn how to fit linear models in R and interpret the parts of the output related to estimation and inference about the parameters. We will work with a data set on the operation of an industrial chemical process. The variable of interest is the parts per thousand (i.e. 10 times the percentage) of ingoing ammonia that escapes (Stkloss); we want this to be low for environmental reasons. We also have data on three variables that might be related to the loss of ammonia: the air flow rate at which the plant is run (Air); the temperature of the cooling water (Temp); and the acid concentration (Acid,in parts per thousand minus 500).
+
+The data are in the file `Stackloss.txt` on Keats or in the github repository. Download the file in your current working directory (ask for help with this if needed!)
+
+### 1. Load in and conduct exploratory analysis
+
+Firstly we can load in and attach the data to the workspace.
+
+```{r}
+Data <- read.table("Stackloss.txt", header=TRUE)
+head(Data)
+attach(Data)
+```
+
+Let's produce some exploratory plots to help us understand the relationships between the variables
+
+```{r}
+plot(Air,Stkloss)
+plot(Temp,Stkloss)
+plot(Acid,Stkloss)
+```
+
+#### Discussion Point 1:
+
+From the scatter plots, which variable(s) would you expect will explain the most of the variation in the levels of Ammonia loss?
+
+`<What do you think?>`
+
+### 2. Model Fitting: Simple Regression
+
+Let's fit a simple linear regression model of ammonia loss on air flow using the command `lm(Stkloss~Air)`. Note how we use formula types in our linear model commands.
+
+```{r}
+lm(Stkloss~Air)
+```
+
+Note that this outputs estimates of the intercept and coefficients of variables included in the model. Note that these have not been assigned to anything - it is more helpful to assign the model to a variable which we can use to conduct some further analysis:
+
+```{r}
+Model1 <- lm(Stkloss~Air)
+```
+
+So far we have just seen the parameter estimates. R can give us a lot more information about the fitted linear model. For now, the most useful command is:
+
+```{r}
+summary(Model1)
+```
+
+The output gives you a table where for each coefficient in the model you are given:
+
+-   `Estimate`
+
+-   `Std. error`: the estimated standard deviation of the estimator for $\beta_j$
+
+-   `t value`: the test statistics $T_j$ for the test $H_0: \beta_j=0$ vs $H_1: \beta_j \neq 0$
+
+-   `Pr(>|t|)`: $p$-value of the above test.
+
+#### Discussion Point 2
+
+What conclusion can you draw about the test for the coefficient of Air in Model1 and what does that mean for the relationship between `Air` and `Stkloss`?
+
+### 3. Model Fitting: Multiple Regression
+
+We can now fit a multiple linear regression model with all the variables in the dataset:
+
+```{r}
+ModelFull <- lm(Stkloss~Air+Temp+Acid)
+summary(ModelFull)
+```
+
+#### Discussion Point 3
+
+On the basis of this fitted model, how can the loss of ammonia (`Stkloss`) be reduced?
+
+#### Discussion Point 4
+
+If you have time, fit the three models each containing two of the explanatory variables and interpret the results. The conclusions are consistent with what we have said above.
+
+```{r}
+ModelAirTemp <- lm(Stkloss~Air+Temp)
+ModelAirAcid <- lm(Stkloss~Air+Acid)
+ModelTempAcid <- lm(Stkloss~Temp+Acid)
+
+summary(ModelAirTemp)
+summary(ModelAirAcid)
+summary(ModelTempAcid)
+```
+
+We will discuss model selection later in the course, but on the basis of the analyses done, which model do you think is the simplest which gives a good fit to the data?
+
+## 4. Presenting summary tables (extra)
+
+The code printed out in R does not look particularly neat and tidy. There is a useful package called `sjplot` that is particularly useful in tidying up these tables for inclusion in PDFs and reports.
+
+```{r}
+install.packages('sjPlot')
+library(sjPlot)
+```
+
+The `tab_model` function is particularly useful, you can have either one model, or multiple models presented together.
+
+```{r}
+tab_model(ModelAirTemp)
+```
+
+```{r}
+tab_model(ModelFull, ModelAirTemp, ModelAirAcid, ModelTempAcid)
+```
+
+This can be particularly useful when trying to compare different models. Note that at times you may find the default precision of rounding is not sufficient in the outputted tables, or you may wish to change some of the headers in the tables. You may also want some other statistics presented for these or different models, and as such, the `tab_model` functions is very flexible - use `help(tab_model)` to find out more about these.
