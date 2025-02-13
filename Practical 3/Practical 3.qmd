@@ -1,0 +1,151 @@
+---
+title: "Practical 3"
+format: html
+editor: visual
+---
+
+## Statistical Modelling: Practical 3
+
+############################################################ 
+
+In this session we will explore further the R function for linear models, including further inference and diagnostics plots. We will consider again the data set on the operation of an industrial chemical process. Recall that the variable of interest is the parts per thousand (i.e. 10 times the percentage) of ingoing ammonia that escapes; we want this to be low for environmental reasons. We also have data on three variables that might be related to the loss of ammonia: the air flow rate at which the plant is run; the temperature of the cooling water; and the acid concentration (in parts per thousand minus 500).
+
+The data are in the file `stackloss.txt` on KEATS and you must first download them in your working directory.
+
+A link to the file is here: <https://keats.kcl.ac.uk/pluginfile.php/11170188/mod_resource/content/1/Stackloss.txt>
+
+```{r}
+Data <- read.table("Stackloss.txt", header = TRUE)
+head(Data)
+attach(Data)
+```
+
+Let's fit the full model from the previous tutorial
+
+```{r}
+ModelFull <- lm(Stkloss ~ Air+Temp+Acid)
+```
+
+### 1. Inference for the parameters
+
+```{r}
+summary(ModelFull)
+```
+
+Remember that $\hat{\beta} \sim N(\beta, \sigma^2(X^TX)^{-1})$. The variance component here is of interest, as it tells us about the uncertainty in our parameter estimates. This uncertainty comes from sampling variability. That is, if we were to collect two different samples from the same population, and fitted regression models with the same variables, each of those models would give different parameter estimates because the samples are numerically different. This distribution can be useful in determining whether variables are significant or not.
+
+We can obtain a 95% confidence interval for the coefficient of air.
+
+```{r}
+beta <- ModelFull$coefficients # extract the coefficients 
+beta_sd <- summary(ModelFull)$coefficients[,2] # extract the standard errors of the coefficients
+
+l <- beta[2]-qt(0.975,17)*beta_sd[2] # lower confidence bound
+u <- beta[2]+qt(0.975,17)*beta_sd[2] # upper confidence bound
+cbind(l,u)
+```
+
+The function `qt(0.975,17)` gives us the 0.975 quantile of a student-$t$ with 17 degrees of freedom.
+
+In place of the above code, we could use the `confint` function, which produces 95% confidence intervals by default.
+
+```{r}
+confint(ModelFull)
+```
+
+Check that it gives the same result!
+
+### 2. Inference for mean response
+
+Now we will consider inference for $\mu(x_0)$, the expected response at some levels of the explanatory variables given by the vector $x_0$. This can be done using the R function `predict`. First note that
+
+```{r}
+predict(ModelFull)
+```
+
+only gives you the fitted values hat(mu), the same as
+
+```{r}
+ModelFull$fitted.values
+```
+
+If we want to predict at $x_0$, we have to first create a data frame containing $x_0$, then use this in predict as follows:
+
+```{r}
+New.Values <- data.frame(Air = 60, Temp = 20, Acid = 59)
+predict(ModelFull, New.Values)
+```
+
+We can predict $\mu$ at several combinations of levels of the explanatory variables, by including them all in the new data frame, e.g.
+
+```{r}
+New.Values2 <- data.frame(Air = c(60,65), Temp = c(20,15), Acid = c(59,59))
+predict(ModelFull, New.Values2)
+```
+
+This just gives the point estimates, but we can also obtain the estimated standard errors of the corresponding estimators, using
+
+```{r}
+predict(ModelFull, New.Values2, se.fit = T)
+```
+
+We could use this to construct confidence intervals or carry out hypothesis tests. However, there is a more direct way to get 95% confidence intervals for $\mu$ at these specific values of the explanatory variables:
+
+```{r}
+predict(ModelFull, New.Values2, interval = "confidence")
+```
+
+and prediction intervals
+
+```{r}
+predict(ModelFull, New.Values2, interval = "prediction")
+```
+
+The default level is 95%, but we can change it.
+
+For example, if we want 99% prediction intervals we use
+
+```{r}
+predict(ModelFull, New.Values2, interval = "prediction", level = 0.99)
+```
+
+and, of course, we can choose any confidence level we want. Make sure you understand the output. Try doing the same for the confidence intervals!
+
+Make sure you are comfortable with the different notions of a confidence and prediction interval. The confidence interval gives you an interval for the mean prediction if you were to make many predictions - it only accounts for the sampling error. However, a prediction interval is telling you the interval for a single prediction. This is why confidence intervals are narrower than prediction intervals. It accounts for both the sampling error and prediction error.
+
+### 3. The ANOVA table
+
+Look again at the summary for the full model. The third line from the bottom gives us $s$, the estimated standard deviation, which is also the square root of the Error Mean Square, labelled as `Residual standard error`, along with the residual degrees of freedom. The very last line gives the results of the global $F$-test of $H_0 : \beta_1 = \beta_2 = \beta_3 = 0$.
+
+However, this is certainly not in the form of an ANOVA table. The function `anova()` allows us to compute ANOVA tables. However, simply typing
+
+```{r}
+anova(ModelFull)
+```
+
+does something different than what we have seen in the lecture. The reason is that this ANOVA table is doing a further decomposition of the sum-of-squares for a sequence of nested models - we are going to see this in future weeks.
+
+To replicate the ANOVA table seen in the lecture we need to force R to compare the fitted model only with the so called null model, i.e. the model with only the intercept:
+
+```{r}
+ModelNull <- lm(Stkloss ~ 1) 
+anova(ModelNull, ModelFull)
+```
+
+This gives most of the information we need, but not the mean squares and not in a particularly nice format.
+
+Discussion point 1: interpret the output of this function, can you recognise all the quantities in the ANOVA table seen in the lecture?
+
+Discussion point 2: what decision would you take on the global $F$-test for this model? What does it mean in practice?
+
+### 4. Coefficient of (multiple) determination
+
+Have a look at the summary of the model
+
+```{r}
+summary(ModelFull)
+```
+
+and find out the value of the $R^2$. Is the model a good fit for the data based on this quantity? Also comment on the global $F$-test.
+
+Note that this is different to the `Adjusted R-squared`, which is a variation of the $R^2$ that factors in the number of variables included in the model, $p$.
