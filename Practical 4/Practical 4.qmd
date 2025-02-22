@@ -166,7 +166,7 @@ pred.R2(Model2)
 
 Discussion: Based on the predictive $R^2$ values, which model provides the best predictive performance?
 
-# 5. Step-wise Search Based on AIC
+### 5. Step-wise Search Based on AIC
 
 Finally, we perform a step-wise model search using AIC to potentially find a better model.
 
