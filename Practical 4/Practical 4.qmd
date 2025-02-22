@@ -1,0 +1,187 @@
+---
+title: "Practical 4"
+format: html
+editor: visual
+---
+
+## Statistical Modelling: Practical 4
+
+In this practical we will discuss model selection. The data are provided in the file `Stackloss.txt` (available on KEATS).
+
+Below we load the data, inspect the first few rows, and attach the data frame.
+
+```{r}
+# Load data
+Data <- read.table("Stackloss.txt", header = TRUE)
+head(Data)
+
+# Attach the data frame for easy variable access
+attach(Data)
+```
+
+### 1. Partial F-tests
+
+A partial F test tells us whether a larger model is explaining significantly more variance than the smaller model accounting for the additional degrees of freedom in the larger model.
+
+**Steps for Partial** $F$**-test**
+
+1.  Fit two *nested* models:
+    -   A full model (e.g. $Y \sim X_1 + X_2 + X_3$)
+    -   A reduced model (e.g., $Y \sim X_1$)
+2.  Compute the partial $F$-statistic using ANOVA:
+
+$$F = \frac{(SSR_{\text{reduced}} - SSR_{\text{full}}) / (df_{\text{reduced}} - df_{\text{full}})}{SSE_{\text{full}} / df_{\text{full residual}}} $$
+
+-   $SSR$: Regression sum of squares
+-   $SSE$: Error sum of squares
+-   $df$: Degrees of freedom
+
+3.  Evaluate the $p$-value:
+    -   If $p < 0.05$, the additional predictors significantly improve the model fit.
+    -   If $p \geq 0.05$, the simpler model is sufficient.
+
+We begin by fitting the full model using all three predictors.
+
+```{r}
+# Full model with all predictors
+ModelFull <- lm(Stkloss ~ Air + Temp + Acid)
+summary(ModelFull)
+```
+
+Next, we fit a reduced model using only `Temp` as the predictor.
+
+```{r}
+# Reduced model with only Temp as predictor
+ModelRed <- lm(Stkloss ~ Temp)
+```
+
+We then carry out the partial $F$-test to compare the two models.
+
+```{r}
+# Partial F-test between the reduced and full model
+anova(ModelRed, ModelFull)
+```
+
+Discussion: Based on the partial $F$-test output, discuss whether the additional predictors (`Air` and `Acid`) significantly improve the model over using `Temp` alone.
+
+### 2. Comparison of Non-Nested Models
+
+Since the partial $F$-test only works for nested models, we now compare non-nested models. Consider the following model:
+
+```{r}
+# Model with predictors Air and Acid (excluding Temp)
+Model2 <- lm(Stkloss ~ Air + Acid)
+summary(Model2)
+```
+
+Discussion: Review the summaries of the models. Which model appears better based on the adjusted $R^2$ values?
+
+**Multiple R-squared vs. Adjusted R-squared**
+
+Multiple $R^2$ measures the proportion of variability in the response variable explained by the regression model: $R^2 = 1 - \frac{SSE}{SST}$ where:
+
+-   $SSE$: Sum of Squared Errors
+-   $SST$: Total Sum of Squares
+
+Adjusted R-squared adjusts (R\^2) for the number of predictors, penalizing more complex models: $R^2_{\text{adj}} = 1 - \left[ \frac{SSE / (n - p - 1)}{SST / (n - 1)} \right]$ where:
+
+-   $n$: Sample size
+-   $p$: Number of predictors
+
+Comparison:
+
+-   Multiple $R^2$ always increases or stays the same when adding predictors, potentially overestimating model quality
+
+-   Adjusted $R^2$ can decrease if extra predictors don't sufficiently improve the model, providing a more balanced measure for model comparison
+
+### 3. Comparison Using AIC
+
+Another way to compare models is by using the Akaike Information Criterion (AIC). AIC is a measure for model selection that balances model fit and complexity. It is defined as:
+$\text{AIC} = 2k - 2\ln(\hat{L})$ where:
+
+-   $k$: Number of estimated parameters in the model
+
+-   $\hat{L}$: Maximum value of the likelihood function for the model, that is the likelihood given by $Y \sim N(X\beta, \sigma^2 I)$ where the parameters $\beta$ and $\sigma^2$ for each model are estimated using the Maximum Likelihood Estimates.
+
+We calculate the AIC for the three models.
+
+```{r}
+# Compute AIC for each model
+AIC(ModelRed)
+AIC(Model2)
+AIC(ModelFull)
+```
+
+Discussion: Which model is preferred based on the AIC values?\
+*Optional:* *You might also try listing all possible models using the three predictors and choose the best one based on AIC.*
+
+### 4. Predictive $R^2$
+
+Predictive $R^2$ measures how well a regression model predicts new observations. It is defined as:$R^2_{\text{pred}} = 1 - \frac{\text{PRESS}}{\text{SST}}$.
+The Predictive Residual Sum of Squares (PRESS) is calculated as:
+
+$\text{PRESS} = \sum_{i=1}^{n} \big(\frac{e_i}{1-h_{ii}}\big)^2$
+
+where
+
+-   $e_i$: The residual for observation $i$
+
+-   $h_{ii}$: the leverage value taken from the diagonal of the hat matrix for observation $i$
+
+-   $SST$: The total sum of squares given by $\sum_{i=1}^{n} (y_i - \bar{y})^2$
+
+Interpretation:
+
+-   Higher predictive $R^2$ indicates better model performance
+
+-   Unlike regular $R^2$, predictive $R^2$ assess the model's predictive ability on unseen data, assessing predictive performance.
+
+Predictive $R^2$ is not provided directly by R. We define a function to compute it.
+
+```{r}
+pred.R2 <- function(model) {
+  # Obtain the design matrix X of the model.
+  X <- model.matrix(model)
+  # Compute the projection matrix H.
+  H <- X %*% solve(t(X) %*% X) %*% t(X)
+  # Extract the diagonal elements of H.
+  h <- diag(H)
+  # Compute the predictive residuals (PRESS).
+  PRESS <- sum((model$residuals / (1 - h))^2)
+  # Compute the total sum of squares.
+  SST <- sum((model$model[,1] - mean(model$model[,1]))^2)
+  # Calculate the predictive R².
+  Rp <- 1 - PRESS / SST
+  return(Rp)
+}
+```
+
+Now, we calculate the predictive $R^2$ for each model.
+
+```{r}
+pred.R2(ModelFull)
+pred.R2(ModelRed)
+pred.R2(Model2)
+```
+
+Discussion: Based on the predictive $R^2$ values, which model provides the best predictive performance?
+
+# 5. Step-wise Search Based on AIC
+
+Finally, we perform a step-wise model search using AIC to potentially find a better model.
+
+```{r}
+# Perform step-wise search starting from the full model
+step(ModelFull)
+```
+
+Alternatively, you can save the best model and review its details.
+
+```{r}
+# Save the best model from step-wise search
+Model.best <- step(ModelFull)
+summary(Model.best)
+plot(Model.best)
+```
+
+Discussion: Review the results from the step-wise search and compare the best model with the models you have already fitted.
