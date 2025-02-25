@@ -1,0 +1,10 @@
+name: qq_plot_app
+title:
+username: kieranbakerresources
+account: kieranbakerresources
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14097107
+bundleId: 9855220
+url: https://kieranbakerresources.shinyapps.io/qq_plot_app/
+version: 1
