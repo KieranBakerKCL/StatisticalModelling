@@ -1,0 +1,201 @@
+---
+title: "Practical 5"
+format: html
+editor: visual
+---
+
+## Statistical Modelling: Practical 4
+
+#### 1. ANOVA
+
+This is an example of model with only categorical variables as predictors. To illustrate this, we are going to use one of the built in datasets that comes with R - the `ToothGrowth` data. This has data about the length of tooth growth in 60 Guinea Pigs when receiving different doses of Vitamin C supplement. The supplement is administered in two different ways, one is via orange juice (encoded `OJ)`, and the other is via Absorbic acid (encoded `VC`). Details and references can be found by running `help(ToothGrowth)`.
+
+```{r}
+data("ToothGrowth")
+attach(ToothGrowth)
+View(ToothGrowth)
+```
+
+The `ToothGrowth` data set has three variables in it:
+
+-   `len`: Length of the tooth
+
+-   `supp`: This is the method of administration
+
+-   `dose`: The dose of Vitamin C
+
+Let’s start with exploratory data analysis and look at interaction plot and mean effect plots.
+
+```{r}
+# Mean effect plots
+sup.name<-unique(supp) # define the levels of the factor
+mean.effects<-c(mean(len[supp==sup.name[1]]),mean(len[supp==sup.name[2]]))
+# compute the mean of the response for each level
+#values of the mean effect for supplement
+print('Mean Effects:')
+mean.effects
+plot(c(-1,1),mean.effects,xaxt='n',type='b',
+xlab="Supplement type",ylab="Mean length",
+main = "Mean effect of supplement type")
+axis(2,at=c(15,16,17,18,19,20,21))
+axis(1,at=c(-1,1),labels=sup.name)
+```
+
+```{r}
+# same for the dose:
+dose.name<-unique(dose)
+mean.effects<-c(mean(len[dose==dose.name[1]]),
+mean(len[dose==dose.name[2]]),mean(len[dose==dose.name[3]]))
+mean.effects
+plot(dose.name,mean.effects,type='b',xlab="dose",
+ylab="Mean length",main="Main effect of the dose")
+```
+
+```{r}
+# interaction plot
+interaction.plot(dose,supp,len)
+```
+
+*Discussion: Simply looking at this visual exploration, how would you describe the effect of the dose
+and the supplement on the tooth length and their interaction?*
+
+Now, fit a linear regression model to confirm this: This will treat dose as a continuous variable:
+
+```{r}
+model_ANOVA<-lm(len~dose*supp)
+summary(model_ANOVA)
+```
+
+If the dose should be treated as categorical in you model, you need to force it to be factor:
+
+```{r}
+Dose<-factor(dose)
+model_TWO_WAY_ANOVA<-lm(len~Dose*supp)
+summary(model_TWO_WAY_ANOVA)
+```
+
+Which approach to be used depend on the practical problem at hand, i.e., if there is an interest in a continuous response from the dose or not.
+*Warning: it is always good practice to check that the variable that you want to treat as categorical are coded as factor in R!*
+
+```{r}
+is.factor(dose)
+is.factor(Dose)
+```
+
+*Discussion: Interpret the two models that you have fitted. Do they confirm your impressions from the exploratory data analysis? Is there any difference in interpretation between the two (Hint: look at the interaction terms).*
+
+#### 2. Optimization
+
+First let’s simulate some data:
+
+```{r}
+set.seed(100) # this is to have the same simulate data, but you can try changing it!
+
+x1<-c(-1,-0.5,0.5,1,-1,-0.5,0.5,1,0.3,-0.3,0.7,-0.7)
+x2<-sample(x1,length(x1)) # x2 is a reshuffled version of x1
+
+y<-(x1-0.5)^2+(x2+0.7)^2+x1*x2+rnorm(length(x1),0,0.1)
+data<-data.frame(y,x1,x2)
+plot(data)
+```
+
+The model that has been used to generate the data is $Y_i = (X_{1,i} - 0.5)^2 + (X_{2,i} + 0.7)^2 + X_{1,i}X_{2,i} + \varepsilon_i$ where $\varepsilon_i \sim N(0, 0.1^2)$
+
+The objective of this exercise is to find the values of $x_1$ and $x_2$ that minimize $y$. Let’s fit a quadratic model:
+
+```{r}
+model_opt<-lm(y~x1*x2+I(x1^2)+I(x2^2))
+summary(model_opt)
+```
+
+In this case we know this is the right model, in a real application we may need to do remove some of the
+terms. Let’s extract the vector $b$ and matrix $B$ needed to compute the stationary point. Recall the quadratic form $f(x) = x^TBx + b^Tx$, then the stationary point is given by $x=-\frac{1}{2} B^{-1}b$, obtained by solving $\nabla_xf(x) = 0$ .
+
+```{r}
+beta<-model_opt$coefficients
+b<-beta[2:3]
+B<-matrix(0,2,2)
+B[1,1]<-beta[4]
+B[2,2]<-beta[5]
+B[1,2]<-B[2,1]<-0.5*beta[6]
+x_opt<--0.5*solve(B)%*%b
+x_opt
+```
+
+Now we need to check if it a maximum, a minimum or neither - we do this by checking the eigenvalues of $B$. Given eigenvalues $\lambda_i$:
+
+-   If $\lambda_i > 0$ for all $i$, then the quadratic form is convex and the turning point is a minimum
+
+-   If $\lambda_i > 0$ for all $i$, then the quadratic form is concave and the turning point is a maximum
+
+-   If there are mixed signs, then the turning point is a saddle
+
+```{r}
+eigen(B)$values # eigenvalues of B
+```
+
+Therefore we have a minimum point.
+
+Second thing to check is that it is in the range where we have observations:
+
+```{r}
+range(x1)
+range(x2)
+```
+
+*Discussion: Is it within the observation range? If it is not, the "correct" answer (apart for collecting more
+data), it is to choose the closest point in the range of the observations.*
+
+*Optional: Try to define a new grid x1 and x2 centered on the value you found, simulate new data and repeat the exercise.*
+
+#### 3. Generalized linear models: Binary (logistic) regression
+
+Data are collected for 40 patients receiving a new surgery technique. The variable surv takes the value 1 if
+the patient show any negative side effect in the 30 days after surgery and is 0 otherwise. The age (years) of
+the patient is also recorded. This are binary data, where the response is 0/1, andwe need to use a Bernoulli
+regression, also called ***Logistic regression*** (from the name of the *link function*).
+
+Recall that logistic regression is the following:
+
+$log\big(\frac{P}{1-P}\big) = \beta_0 + \beta_1 x_1 + ... + \beta_k x_k + \varepsilon$
+
+or equivalently:
+
+$P = \Big( \frac{1}{1+e^{-(\beta_0 + \beta_1 x_1 + ... + \beta_k x_k + \varepsilon)}}\Big)$
+
+We call the quantity $\frac{P}{1-P}$ the odds, and hence $log\big(\frac{P}{1-P}\big)$ is the log odds.
+
+The question of interest is to see how the probability $P$ of having negative side effects depends on age. Let's import the data and explore it:
+
+```{r}
+surg <- read.table("surgery.txt",header=T)
+attach(surg)
+head(surg)
+plot(Age, surv)
+```
+
+Fit a Logistic regression (or Bernoulli regression) model:
+
+```{r}
+surg1.glm <- glm(surv ~ Age, binomial, data=surg)
+summary(surg1.glm)
+```
+
+Again, we can use the `step()` function to see if we should keep Age in the model:
+
+```{r}
+step(surg1.glm)
+```
+
+Let’s also plot the probability of having side effect (i.e. the mean of our Bernoulli response) given age:
+
+```{r}
+plot(Age, surv, pch=20)
+coefs = surg1.glm$coefficients
+Ages = seq(from=49, to=73, length.out=1000)
+g_mu = coefs[1] + Ages*coefs[2]
+probs = exp(g_mu)/(1 + exp(g_mu)) # inverse of the link function
+points(Ages, probs, type="l")
+```
+
+What would you conclude from this graph?
