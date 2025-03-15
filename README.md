@@ -14,4 +14,4 @@ This GitHub repository contains Quarto documents and other files relevant to the
 
 Worksheets and solutions for the theoretical tutorials can be found on [my webpage](https://sites.google.com/site/kieranbakerresources/home).
 
-Questions from students can be addressed to [kieran.baker\@kcl.ac.uk](mailto:kieran.baker@kcl.ac.uk){.email}.
+Questions from students can be addressed to [kieran.baker\@kcl.ac.uk](mailto:kieran.baker@kcl.ac.uk).
