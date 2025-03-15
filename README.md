@@ -1,7 +1,17 @@
 # 5CCM242A/6CCM242B - Statistical Modelling
 
-Welcome to my githib repository which contains all the code relevent to the 5CCM242A/6CCM242B - Statistical Modelling course at KCL. Use these resources as a guide for how to write code and conduct statistical analysis in R. Note that the details of the analysis in this repo is far from exhaustive - statistics is a huge field, this course is an introduction to the key concepts to start!
+This GitHub repository contains Quarto documents and other files relevant to the Statistical Modelling course at King's College London. The purpose of these resources is to help students understand some of the fundamental syntax in R, alongside how to perform analysis on data using the methods explained in the lectures and tutorials. A general comment about this course is that it is introductory, and there are many varieties of models and techniques that are not covered in the course.
 
-Solutions to the theoretical tutorials can be found on [my webpage](https://sites.google.com/site/kieranbakerresources/home).
+> Practical 1: R Fundamentals, Loading in Data
+>
+> Practical 2: Exploratory Data Analysis, Simple and Multiple Regression
+>
+> Practical 3: Statistical Inference, Confidence and Prediction intervals, ANOVA, R-Squared
+>
+> Practical 4: Model Selection (Partial F-Tests, R-Squared, AIC, Predictive R-Squared, Stepwise selection)
+>
+> Practical 5: Two-way ANOVA, Optimisation with Quadratic Forms, and Logistic Regression.
 
-Questions from students can be addressed to kieran.baker@kcl.ac.uk.
+Worksheets and solutions for the theoretical tutorials can be found on [my webpage](https://sites.google.com/site/kieranbakerresources/home).
+
+Questions from students can be addressed to [kieran.baker\@kcl.ac.uk](mailto:kieran.baker@kcl.ac.uk){.email}.
